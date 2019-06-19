@@ -124,7 +124,16 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     for (const key in formControls) {
       if (this.formGroup.controls.hasOwnProperty(key)) {
         const control = formControls[key];
-        if (control && filterControl(control, key)) {
+
+        if (control instanceof FormArray) {
+          controls[key] = [] as any;
+
+          for (let i = 0; i < control.length; i++) {
+            if (filterControl(control.at(i), key)) {
+              (controls[key] as any).push(mapControl(control.at(i), key));
+            }
+          }
+        } else if (control && filterControl(control, key)) {
           controls[key] = mapControl(control, key);
         }
       }
