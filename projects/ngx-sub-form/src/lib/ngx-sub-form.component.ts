@@ -29,10 +29,13 @@ type FilterControlFunction<FormInterface> = (ctrl: AbstractControl, key: keyof F
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
   implements ControlValueAccessor, Validator, OnDestroy, OnFormUpdate<FormInterface> {
   public get formGroupControls(): ControlsType<FormInterface> {
-    // @note form-group-undefined we need the no-null-assertion here because we do not want to expose the fact that
+    // @note form-group-undefined we need the return null here because we do not want to expose the fact that
     // the form can be undefined, it's handled internally to contain an Angular bug
-    // tslint:disable-next-line:no-non-null-assertion
-    return this.mapControls<any>()!;
+    if (!this.formGroup) {
+      return null as any;
+    }
+
+    return this.formGroup.controls as ControlsType<FormInterface>;
   }
 
   public get formGroupValues(): Required<FormInterface> {
@@ -103,7 +106,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     filterControl: FilterControlFunction<FormInterface>,
   ): Partial<ControlMap<FormInterface, MapValue>> | null;
   private mapControls<MapValue>(
-    mapControl?: MapControlFunction<FormInterface, MapValue>,
+    mapControl: MapControlFunction<FormInterface, MapValue>,
   ): ControlMap<FormInterface, MapValue> | null;
   private mapControls<MapValue>(
     mapControl?: MapControlFunction<FormInterface, MapValue>,
@@ -116,7 +119,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     const formControls: Controls<FormInterface> = this.formGroup.controls;
 
     if (!mapControl) {
-      return formControls as any;
+      return formControls;
     }
 
     const controls: Partial<ControlMap<FormInterface, MapValue>> = {};
